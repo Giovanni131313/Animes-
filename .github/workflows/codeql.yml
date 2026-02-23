@@ -1,0 +1,195 @@
+# For most projects, this workflow file will not need changing; you simply need
+# to commit it to your repository.
+#
+# You may wish to alter this file to override the set of languages analyzed,
+# or to provide custom queries or build logic.
+#
+# ******** NOTE ********
+# We have attempted to detect the languages in your repository. Please check
+# the `language` matrix defined below to confirm you have the correct set of
+# supported CodeQL languages.
+#
+name: "CodeQL Advanced"
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '31 19 * * 0'
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    # Runner size impacts CodeQL analysis time. To learn more, please see:
+    #   - https://gh.io/recommended-hardware-resources-for-running-codeql
+    #   - https://gh.io/supported-runners-and-hardware-resources
+    #   - https://gh.io/using-larger-runners (GitHub.com only)
+    # Consider using larger runners or machines with greater resources for possible analysis time improvements.
+    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+    permissions:
+      # required for all workflows
+      security-events: write
+
+      # required to fetch internal or private CodeQL packs
+      packages: read
+
+      # only required for workflows in private repositories
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - language: javascript-typescript
+          build-mode: none
+        # CodeQL supports the following values keywords for 'language': 'actions', 'c-cpp', 'csharp', 'go', 'java-kotlin', 'javascript-typescript', 'python', 'ruby', 'rust', 'swift'
+        # Use `c-cpp` to analyze code written in C, C++ or both
+        # Use 'java-kotlin' to analyze code written in Java, Kotlin or both
+        # Use 'javascript-typescript' to analyze code written in JavaScript, TypeScript or both
+        # To learn more about changing the languages that are analyzed or customizing the build mode for your analysis,
+        # see https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/customizing-your-advanced-setup-for-code-scanning.
+        # If you are analyzing a compiled language, you can modify the 'build-mode' for that language to customize how
+        # your codebase is analyzed, see https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/codeql-code-scanning-for-compiled-languages
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Add any setup steps before running the `github/codeql-action/init` action.
+    # This includes steps like installing compilers or runtimes (`actions/setup-node`
+    # or others). This is typically only required for manual builds.
+    # - name: Setup runtime (example)
+    #   uses: actions/setup-example@v1
+
+    # Initializes the CodeQL tools for scanning.
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v4
+      with:
+        languages: ${{ matrix.language }}
+        build-mode: ${{ matrix.build-mode }}
+        # If you wish to specify custom queries, you can do so here or in a config file.
+        # By default, queries listed here will override any specified in a config file.
+        # Prefix the list here with "+" to use these queries and those in the config file.
+
+        # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
+        # queries: security-extended,security-and-quality
+
+    # If the analyze step fails for one of the languages you are analyzing with
+    # "We were unable to automatically build your code", modify the matrix above
+    # to set the build mode to "manual" for that language. Then modify this step
+    # to build your code.
+    # ℹ️ Command-line programs to run using the OS shell.
+    # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
+    - name: Run manual build steps
+      if: matrix.build-mode == 'manual'
+      shell: bash
+      run: |
+        echo 'If you are using a "manual" build mode for one or more of the' \
+          'languages you are analyzing, replace this with the commands to build' \
+          'your code, for example:'
+        echo '  make bootstrap'
+        echo '  make release'
+        exit 1
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v4
+      with:
+        category: "/language:${{matrix.language}}"
+     - nome: Cache
+  utiliza: actions/cache@v5.0.3
+  com:
+    # Uma lista de arquivos, diretórios e padrões curinga para armazenar em cache e restaurar
+    caminho:
+    # Uma chave explícita para restaurar e salvar o cache
+    chave:
+    # Uma string ordenada de várias linhas listando as chaves correspondentes ao prefixo, que são usadas para restaurar o cache obsoleto caso não ocorra nenhuma ocorrência de cache para a chave. Observe que `cache-hit` retorna falso neste caso.
+    restaurar-chaves: # opcional
+    # O tamanho do bloco usado para dividir arquivos grandes durante o upload, em bytes
+    tamanho-do-pedaço-de-upload: # opcional
+    # Um valor booleano opcional que, quando ativado, permite que os executores do Windows salvem ou restaurem caches que podem ser restaurados ou salvos, respectivamente, em outras plataformas.
+    enableCrossOsArchive: # opcional, o padrão é falso
+    # Falhe o fluxo de trabalho se a entrada de cache não for encontrada
+    falha-em-cache-miss: # opcional, o padrão é falso
+    # Verifica se existe uma entrada de cache para a(s) entrada(s) fornecida(s) (chave, chaves-de-restauração) sem baixar o cache
+    lookup-only: # opcional, o padrão é falso
+    # Execute a etapa pós-execução para salvar o cache mesmo que uma etapa anterior falhe
+    salvar-sempre: # opcional, o padrão é falso
+         - nome: Carregar um artefato de compilação
+  utiliza: actions/upload-artifact@v6.0.0
+  com:
+    # Nome do artefato
+    nome: # opcional, o padrão é artefato
+    # Um arquivo, diretório ou padrão curinga que descreve o que deve ser enviado
+    caminho:
+    # O comportamento desejado caso nenhum arquivo seja encontrado usando o caminho fornecido.
+Opções disponíveis:
+  aviso: Exiba um aviso, mas não interrompa a ação.
+  erro: Falha na ação com uma mensagem de erro 
+  Ignorar: Não exibir avisos ou erros; a ação não falhará.
+if-no-files-found: # opcional, o padrão é warn
+    # Duração em dias após a qual o artefato expirará. 0 significa usar a retenção padrão.
+                                                                                                               
+    Mínimo de 1 dia. Máximo de 90 dias, a menos que seja alterado na página de configurações do repositório.
+. dias-de-retenção: # opcional
+    # O nível de compressão do Zlib a ser aplicado ao arquivo compactado. O valor pode variar de 0 a 9: - 0: Sem compressão - 1: Melhor velocidade - 6: Compressão padrão (igual ao GNU Gzip) - 9: Melhor compressão. Níveis mais altos resultarão em melhor compressão, mas levarão mais tempo para concluir o processo. Para arquivos grandes que não são facilmente comprimidos, recomenda-se o valor 0 para uploads significativamente mais rápidos.
+    nível-de-compressão: # opcional, o padrão é 6
+    # Se verdadeiro, um artefato com o nome correspondente será excluído antes que um novo seja carregado. Se falso, a ação falhará se já existir um artefato com o nome fornecido. Não falhará se o artefato não existir.
+
+    sobrescrever: # opcional, o padrão é falso
+    # Se verdadeiro, os arquivos ocultos serão incluídos no artefato. Se falso, os arquivos ocultos serão excluídos do artefato.
+
+    include-hidden-files: # opcional, o padrão é falso
+               - nome: Configurar ambiente Go
+  utiliza: actions/setup-go@v6.2.0
+  com:
+    # A versão Go para baixar (se necessário) e usar. Suporta especificações e intervalos de versionamento semântico. Certifique-se de colocar esta opção entre aspas simples.
+    versão go: # opcional
+    # Caminho para o arquivo go.mod, go.work, .go-version ou .tool-versions.
+    go-version-file: # opcional
+    # Defina esta opção como verdadeira se desejar que a ação sempre verifique a versão mais recente disponível que atenda à especificação de versão.
+    verificar-mais-recente: # opcional
+    # Usado para obter distribuições Go do go-versions. Como existe um valor padrão, este normalmente não é fornecido pelo usuário. Ao executar esta ação no github.com, o valor padrão é suficiente. Ao executar no GHES, você pode fornecer um token de acesso pessoal para o github.com caso esteja enfrentando limitação de taxa.
+    token: # opcional, o padrão é ${{ github.server_url == 'https://github.com' && github.token || '' }}
+    # Usado para especificar se o armazenamento em cache é necessário. Defina como verdadeiro se desejar ativar o armazenamento em cache.
+    cache: # opcional, o padrão é verdadeiro
+    # Usado para especificar o caminho para um arquivo de dependência - go.sum
+    caminho-dependência-de-cache: # opcional
+    # Arquitetura de destino para o Go usar. Exemplos: x86, x64. A arquitetura do sistema será usada por padrão.
+    arquitetura: # opcional
+                      - nome: Configurar ambiente Go
+  utiliza: actions/setup-go@v6.2.0
+  com:
+    # A versão Go para baixar (se necessário) e usar. Suporta especificações e intervalos de versionamento semântico. Certifique-se de colocar esta opção entre aspas simples.
+    versão go: # opcional
+    # Caminho para o arquivo go.mod, go.work, .go-version ou .tool-versions.
+    go-version-file: # opcional
+    # Defina esta opção como verdadeira se desejar que a ação sempre verifique a versão mais recente disponível que atenda à especificação de versão.
+    verificar-mais-recente: # opcional
+    # Usado para obter distribuições Go do go-versions. Como existe um valor padrão, este normalmente não é fornecido pelo usuário. Ao executar esta ação no github.com, o valor padrão é suficiente. Ao executar no GHES, você pode fornecer um token de acesso pessoal para o github.com caso esteja enfrentando limitação de taxa.
+    token: # opcional, o padrão é ${{ github.server_url == 'https://github.com' && github.token || '' }}
+    # Usado para especificar se o armazenamento em cache é necessário. Defina como verdadeiro se desejar ativar o armazenamento em cache.
+    cache: # opcional, o padrão é verdadeiro
+    # Usado para especificar o caminho para um arquivo de dependência - go.sum
+    caminho-dependência-de-cache: # opcional
+    # Arquitetura de destino para o Go usar. Exemplos: x86, x64. A arquitetura do sistema será usada por padrão.
+    arquitetura: # opcional
+                      - nome: Configurar ambiente Go
+  utiliza: actions/setup-go@v6.2.0
+  com:
+    # A versão Go para baixar (se necessário) e usar. Suporta especificações e intervalos de versionamento semântico. Certifique-se de colocar esta opção entre aspas simples.
+    versão go: # opcional
+    # Caminho para o arquivo go.mod, go.work, .go-version ou .tool-versions.
+    go-version-file: # opcional
+    # Defina esta opção como verdadeira se desejar que a ação sempre verifique a versão mais recente disponível que atenda à especificação de versão.
+    verificar-mais-recente: # opcional
+    # Usado para obter distribuições Go do go-versions. Como existe um valor padrão, este normalmente não é fornecido pelo usuário. Ao executar esta ação no github.com, o valor padrão é suficiente. Ao executar no GHES, você pode fornecer um token de acesso pessoal para o github.com caso esteja enfrentando limitação de taxa.
+    token: # opcional, o padrão é ${{ github.server_url == 'https://github.com' && github.token || '' }}
+    # Usado para especificar se o armazenamento em cache é necessário. Defina como verdadeiro se desejar ativar o armazenamento em cache.
+    cache: # opcional, o padrão é verdadeiro
+    # Usado para especificar o caminho para um arquivo de dependência - go.sum
+    caminho-dependência-de-cache: # opcional
+    # Arquitetura de destino para o Go usar. Exemplos: x86, x64. A arquitetura do sistema será usada por padrão.
+    arquitetura: # opcional
+                
